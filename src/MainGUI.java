@@ -19,7 +19,7 @@ import java.util.List;
  *   • JScrollPane  — scrollable wrapper for the table
  *   • JOptionPane  — dialog messages for errors and confirmations
  *   • JComboBox    — dropdown for sort criteria
- *   • JCheckBox    — perishable toggle
+ *   • JCheckBox    — expiring toggle
  *
  * EXCEPTION HANDLING:
  *   Invalid inputs (non-numeric price/quantity, missing fields) are caught
@@ -38,7 +38,7 @@ public class MainGUI extends JFrame {
     private JTextField txtQuantity;
     private JTextField txtExpiryDate;
     private JTextField txtSearch;
-    private JCheckBox  chkPerishable;
+    private JCheckBox  chkExpiring;
 
     // ── Table ───────────────────────────────────────────────────────
     private JTable          productTable;
@@ -56,7 +56,7 @@ public class MainGUI extends JFrame {
 
     // ── Table column names ──────────────────────────────────────────
     private final String[] COLUMNS = {
-            "Product ID", "Name", "Category", "Price", "Quantity", "Perishable", "Expiry Date", "Total Value"
+            "Product ID", "Name", "Category", "Price", "Quantity", "Expires", "Expiry Date", "Total Value"
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -136,13 +136,13 @@ public class MainGUI extends JFrame {
 
         // Row 1 — Perishable checkbox
         gbc.gridx = 4;
-        chkPerishable = new JCheckBox("Perishable");
-        panel.add(chkPerishable, gbc);
+        chkExpiring = new JCheckBox("Has Expiry Date");
+        panel.add(chkExpiring, gbc);
 
         // Row 1 — Expiry Date
         gbc.gridx = 5;
         txtExpiryDate = new JTextField(12);
-        txtExpiryDate.setToolTipText("YYYY-MM-DD (only for perishable)");
+        txtExpiryDate.setToolTipText("YYYY-MM-DD (only for expiring products)");
         panel.add(txtExpiryDate, gbc);
 
         // Row 2 — Search
@@ -455,9 +455,9 @@ public class MainGUI extends JFrame {
             return false;
         }
 
-        if (chkPerishable.isSelected() && txtExpiryDate.getText().trim().isEmpty()) {
+        if (chkExpiring.isSelected() && txtExpiryDate.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Please enter an Expiry Date for perishable products (YYYY-MM-DD).",
+                    "Please enter an Expiry Date for expiring products (YYYY-MM-DD).",
                     "Missing Input", JOptionPane.WARNING_MESSAGE);
             return false;
         }
@@ -466,10 +466,10 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Creates a Product or PerishableProduct from the current input fields.
+     * Creates a Product or ExpiringProduct from the current input fields.
      * Demonstrates POLYMORPHISM — the returned object can be either type.
      *
-     * @return Product or PerishableProduct
+     * @return Product or ExpiringProduct
      * @throws NumberFormatException if price or quantity are not valid numbers
      */
     private Product createProductFromFields() throws NumberFormatException {
@@ -479,10 +479,10 @@ public class MainGUI extends JFrame {
         double price    = Double.parseDouble(txtPrice.getText().trim());
         int    quantity = Integer.parseInt(txtQuantity.getText().trim());
 
-        if (chkPerishable.isSelected()) {
+        if (chkExpiring.isSelected()) {
             String expiry = txtExpiryDate.getText().trim();
-            // Inheritance: PerishableProduct extends Product
-            return new PerishableProduct(id, name, category, price, quantity, expiry);
+            // Inheritance: ExpiringProduct extends Product
+            return new ExpiringProduct(id, name, category, price, quantity, expiry);
         } else {
             return new Product(id, name, category, price, quantity);
         }
@@ -491,23 +491,23 @@ public class MainGUI extends JFrame {
     /**
      * Refreshes the JTable with the given product list.
      * Demonstrates POLYMORPHISM: getTotalValue() returns different results
-     * depending on whether the object is a Product or PerishableProduct.
+     * depending on whether the object is a Product or ExpiringProduct.
      */
     private void refreshTable(List<Product> products) {
         tableModel.setRowCount(0); // clear existing rows
 
         for (Product p : products) {
-            boolean perishable = p instanceof PerishableProduct;
-            String  expiry     = perishable ? ((PerishableProduct) p).getExpiryDate() : "N/A";
+            boolean expiring = p instanceof ExpiringProduct;
+            String  expiry   = expiring ? ((ExpiringProduct) p).getExpiryDate() : "N/A";
 
-            // Polymorphism: getTotalValue() behaves differently for PerishableProduct
+            // Polymorphism: getTotalValue() behaves differently for ExpiringProduct
             Object[] row = {
                     p.getProductId(),
                     p.getName(),
                     p.getCategory(),
                     String.format("%.2f", p.getPrice()),
                     p.getQuantity(),
-                    perishable ? "Yes" : "No",
+                    expiring ? "Yes" : "No",
                     expiry,
                     String.format("%.2f", p.getTotalValue())
             };
@@ -525,8 +525,8 @@ public class MainGUI extends JFrame {
         txtPrice.setText((String) tableModel.getValueAt(row, 3));
         txtQuantity.setText(String.valueOf(tableModel.getValueAt(row, 4)));
 
-        String perishable = (String) tableModel.getValueAt(row, 5);
-        chkPerishable.setSelected("Yes".equals(perishable));
+        String expiring = (String) tableModel.getValueAt(row, 5);
+        chkExpiring.setSelected("Yes".equals(expiring));
 
         String expiry = (String) tableModel.getValueAt(row, 6);
         txtExpiryDate.setText("N/A".equals(expiry) ? "" : expiry);
@@ -543,7 +543,7 @@ public class MainGUI extends JFrame {
         txtQuantity.setText("");
         txtExpiryDate.setText("");
         txtSearch.setText("");
-        chkPerishable.setSelected(false);
+        chkExpiring.setSelected(false);
         productTable.clearSelection();
     }
 }

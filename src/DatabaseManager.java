@@ -13,7 +13,7 @@ import java.util.List;
  * Responsibilities:
  *   • Connect to MySQL (inventory_db)
  *   • INSERT, UPDATE, DELETE, SELECT products
- *   • Convert ResultSet rows into Product / PerishableProduct objects
+ *   • Convert ResultSet rows into Product / ExpiringProduct objects
  *
  * EXCEPTION HANDLING:
  *   All methods propagate or catch SQLExceptions and print meaningful messages.
@@ -23,9 +23,9 @@ import java.util.List;
 public class DatabaseManager {
 
     // ── JDBC connection parameters ──────────────────────────────────
-    private static final String DB_URL  = "jdbc:mysql://localhost:3306/inventory_db";
+    private static final String DB_URL  = "jdbc:mysql://localhost:3307/inventory_db";
     private static final String DB_USER = "root";       // ← Change if needed
-    private static final String DB_PASS = "password";   // ← Change to your MySQL password
+    private static final String DB_PASS = "admin";   // ← Change to your MySQL password
 
     // ── Connection helper ───────────────────────────────────────────
 
@@ -45,7 +45,7 @@ public class DatabaseManager {
      * Retrieves every product from the database.
      * DATA STRUCTURE: Results are stored in an ArrayList.
      *
-     * @return ArrayList of Product (or PerishableProduct) objects
+     * @return ArrayList of Product (or ExpiringProduct) objects
      */
     public List<Product> getAllProducts() {
         // ArrayList — data structure requirement
@@ -127,7 +127,7 @@ public class DatabaseManager {
     /**
      * Inserts a new product into the database.
      *
-     * @param product the Product (or PerishableProduct) to insert
+     * @param product the Product (or ExpiringProduct) to insert
      * @return true if the insert succeeded
      */
     public boolean insertProduct(Product product) {
@@ -143,10 +143,10 @@ public class DatabaseManager {
             pstmt.setDouble(4, product.getPrice());
             pstmt.setInt(5, product.getQuantity());
 
-            // Polymorphism: check runtime type to decide perishable fields
-            if (product instanceof PerishableProduct) {
+            // Polymorphism: check runtime type to decide expiring fields
+            if (product instanceof ExpiringProduct) {
                 pstmt.setInt(6, 1);
-                pstmt.setString(7, ((PerishableProduct) product).getExpiryDate());
+                pstmt.setString(7, ((ExpiringProduct) product).getExpiryDate());
             } else {
                 pstmt.setInt(6, 0);
                 pstmt.setString(7, null);
@@ -180,9 +180,9 @@ public class DatabaseManager {
             pstmt.setDouble(3, product.getPrice());
             pstmt.setInt(4, product.getQuantity());
 
-            if (product instanceof PerishableProduct) {
+            if (product instanceof ExpiringProduct) {
                 pstmt.setInt(5, 1);
-                pstmt.setString(6, ((PerishableProduct) product).getExpiryDate());
+                pstmt.setString(6, ((ExpiringProduct) product).getExpiryDate());
             } else {
                 pstmt.setInt(5, 0);
                 pstmt.setString(6, null);
@@ -221,10 +221,10 @@ public class DatabaseManager {
         }
     }
 
-    // ── Helper: map a ResultSet row → Product or PerishableProduct ──
+    // ── Helper: map a ResultSet row → Product or ExpiringProduct ──
 
     /**
-     * Converts the current ResultSet row into a Product or PerishableProduct
+     * Converts the current ResultSet row into a Product or ExpiringProduct
      * depending on the is_perishable flag.  This is another example of
      * POLYMORPHISM — the returned object's actual type varies at runtime.
      */
@@ -232,7 +232,7 @@ public class DatabaseManager {
         boolean isPerishable = rs.getInt("is_perishable") == 1;
 
         if (isPerishable) {
-            return new PerishableProduct(
+            return new ExpiringProduct(
                     rs.getString("product_id"),
                     rs.getString("name"),
                     rs.getString("category"),

@@ -1,12 +1,12 @@
 /**
- * PerishableProduct.java — Subclass of Product for items with an expiry date.
+ * ExpiringProduct.java — Subclass of Product for items with an expiry date.
  *
  * OOP Concepts demonstrated:
  *   • INHERITANCE   – Extends the Product base class.
  *   • POLYMORPHISM  – Overrides getTotalValue() to apply a near-expiry discount.
  *   • ENCAPSULATION – Private expiryDate field with getter/setter.
  */
-public class PerishableProduct extends Product {
+public class ExpiringProduct extends Product {
 
     // ── Private field (Encapsulation) ───────────────────────────────
     private String expiryDate; // Format: YYYY-MM-DD
@@ -16,7 +16,7 @@ public class PerishableProduct extends Product {
     /**
      * Default constructor.
      */
-    public PerishableProduct() {
+    public ExpiringProduct() {
         super();
     }
 
@@ -30,7 +30,7 @@ public class PerishableProduct extends Product {
      * @param quantity   stock quantity
      * @param expiryDate expiry date in YYYY-MM-DD format
      */
-    public PerishableProduct(String productId, String name, String category,
+    public ExpiringProduct(String productId, String name, String category,
                              double price, int quantity, String expiryDate) {
         // Call parent constructor (Inheritance)
         super(productId, name, category, price, quantity);
@@ -58,7 +58,7 @@ public class PerishableProduct extends Product {
      */
     @Override
     public double getTotalValue() {
-        // Apply a 20% discount for perishable products (near-expiry markdown)
+        // Apply a 20% discount for expiring products (near-expiry markdown)
         return getPrice() * getQuantity() * 0.80;
     }
 
@@ -68,7 +68,7 @@ public class PerishableProduct extends Product {
     @Override
     public String toString() {
         return String.format(
-                "PerishableProduct[id=%s, name=%s, category=%s, price=%.2f, qty=%d, expiry=%s]",
+                "ExpiringProduct[id=%s, name=%s, category=%s, price=%.2f, qty=%d, expiry=%s]",
                 getProductId(), getName(), getCategory(), getPrice(), getQuantity(), expiryDate);
     }
 }

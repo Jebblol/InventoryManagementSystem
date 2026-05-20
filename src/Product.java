@@ -4,7 +4,7 @@
  * OOP Concepts demonstrated:
  *   • ENCAPSULATION – All fields are private; access is through getters/setters.
  *   • POLYMORPHISM  – getTotalValue() can be overridden by subclasses.
- *   • This class serves as the parent for PerishableProduct (INHERITANCE).
+ *   • This class serves as the parent for ExpiringProduct (INHERITANCE).
  */
 public class Product {
 
@@ -86,7 +86,7 @@ public class Product {
 
     /**
      * Calculates the total inventory value for this product.
-     * POLYMORPHISM: This method is overridden in PerishableProduct to
+     * POLYMORPHISM: This method is overridden in ExpiringProduct to
      * apply a discount when the product is near its expiry date.
      *
      * @return price × quantity

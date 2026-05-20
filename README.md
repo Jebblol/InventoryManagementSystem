@@ -14,7 +14,7 @@ InventoryManagementSystem/
 └── src/
     ├── MainApp.java                   ← Application entry point
     ├── Product.java                   ← Base product class (Encapsulation)
-    ├── PerishableProduct.java         ← Subclass (Inheritance, Polymorphism)
+    ├── ExpiringProduct.java           ← Subclass (Inheritance, Polymorphism)
     ├── Searchable.java                ← Interface (Abstraction)
     ├── InventoryManager.java          ← Controller (ArrayList, HashMap, Searchable)
     ├── DatabaseManager.java           ← JDBC database operations
@@ -150,7 +150,7 @@ Run `MainApp.java` from your IDE. The application will:
                │ extends (Inheritance)
                ▼
 ┌──────────────────────────────┐
-│     PerishableProduct        │  (Subclass)
+│      ExpiringProduct         │  (Subclass)
 ├──────────────────────────────┤
 │ - expiryDate: String         │
 ├──────────────────────────────┤
@@ -203,11 +203,11 @@ Run `MainApp.java` from your IDE. The application will:
 
 | Concept | Implementation |
 |---------|----------------|
-| **Inheritance** | `PerishableProduct extends Product` |
-| **Polymorphism** | `getTotalValue()` overridden in `PerishableProduct` (applies 20% discount) |
+| **Inheritance** | `ExpiringProduct extends Product` |
+| **Polymorphism** | `getTotalValue()` overridden in `ExpiringProduct` (applies 20% discount) |
 | **Abstraction** | `Searchable` interface with `searchById()` and `searchByName()` |
-| **Encapsulation** | All fields in `Product` and `PerishableProduct` are `private` with getters/setters |
-| **5+ classes** | `Product`, `PerishableProduct`, `InventoryManager`, `DatabaseManager`, `ProductComparator`, `MainGUI`, `MainApp`, `Searchable` (8 total) |
+| **Encapsulation** | All fields in `Product` and `ExpiringProduct` are `private` with getters/setters |
+| **5+ classes** | `Product`, `ExpiringProduct`, `InventoryManager`, `DatabaseManager`, `ProductComparator`, `MainGUI`, `MainApp`, `Searchable` (8 total) |
 
 ### Data Structures
 
@@ -234,7 +234,7 @@ Run `MainApp.java` from your IDE. The application will:
 | **JTable** | Displays all product records |
 | **JScrollPane** | Wraps the JTable for scrolling |
 | **JOptionPane** | Error/success/confirmation dialogs |
-| **JCheckBox** | Perishable product toggle |
+| **JCheckBox** | Expiring product toggle |
 
 ### Exception Handling
 
