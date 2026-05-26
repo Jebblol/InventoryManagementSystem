@@ -19,11 +19,11 @@ public class MainApp {
             System.err.println("Could not set system look and feel: " + e.getMessage());
         }
 
-        // Launch the GUI on the Swing Event Dispatch Thread
+        // Launch the Login Screen on the Swing Event Dispatch Thread
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new MainGUI();
+                new LoginScreen();
             }
         });
     }

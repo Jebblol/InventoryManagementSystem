@@ -8,7 +8,9 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 
 /**
- * MainGUI.java — Java Swing graphical user interface for the Inventory Management System.
+ * ManagerGUI.java — Java Swing graphical user interface for the Inventory Management System.
+ *
+ * This is the manager interface with full access to inventory management features.
  *
  * GUI Components used:
  *   • JFrame       — main application window
@@ -25,7 +27,7 @@ import java.util.List;
  *   Invalid inputs (non-numeric price/quantity, missing fields) are caught
  *   and reported to the user via JOptionPane dialogs.
  */
-public class MainGUI extends JFrame {
+public class ManagerGUI extends JFrame {
 
     // ── Controller ──────────────────────────────────────────────────
     private InventoryManager inventoryManager;
@@ -63,7 +65,7 @@ public class MainGUI extends JFrame {
     //  CONSTRUCTOR
     // ═══════════════════════════════════════════════════════════════
 
-    public MainGUI() {
+    public ManagerGUI() {
         inventoryManager = new InventoryManager();
 
         // ── JFrame settings ─────────────────────────────────────────
