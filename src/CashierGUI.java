@@ -33,16 +33,24 @@ public class CashierGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(20, 20));
+        
+        // Set modern color scheme
+        getContentPane().setBackground(new Color(255, 228, 196)); // Bisque background
 
         // Create header panel
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        headerPanel.setBackground(new Color(255, 228, 196));
+        headerPanel.setOpaque(true);
         JLabel headerLabel = new JLabel("Cashier Interface");
         headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        headerLabel.setForeground(new Color(139, 69, 19)); // Saddle Brown
         headerPanel.add(headerLabel);
         add(headerPanel, BorderLayout.NORTH);
 
         // Create main panel
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(new Color(255, 228, 196));
+        mainPanel.setOpaque(true);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -82,14 +90,26 @@ public class CashierGUI extends JFrame {
 
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        buttonPanel.setBackground(new Color(255, 228, 196));
+        buttonPanel.setOpaque(true);
 
         btnRemove = new JButton("Remove Item");
         btnRemove.setFont(new Font("Arial", Font.PLAIN, 16));
         btnRemove.setPreferredSize(new Dimension(150, 40));
+        btnRemove.setBackground(new Color(220, 20, 60)); // Crimson
+        btnRemove.setForeground(Color.BLACK);
+        btnRemove.setFocusPainted(false);
+        btnRemove.setBorderPainted(false);
+        btnRemove.setOpaque(true);
 
         btnBack = new JButton("Back to Login");
         btnBack.setFont(new Font("Arial", Font.PLAIN, 16));
         btnBack.setPreferredSize(new Dimension(150, 40));
+        btnBack.setBackground(new Color(70, 130, 180)); // Steel Blue
+        btnBack.setForeground(Color.BLACK);
+        btnBack.setFocusPainted(false);
+        btnBack.setBorderPainted(false);
+        btnBack.setOpaque(true);
 
         buttonPanel.add(btnRemove);
         buttonPanel.add(btnBack);

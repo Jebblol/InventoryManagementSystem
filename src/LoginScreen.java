@@ -1,91 +1,80 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
- * LoginScreen.java — Role selection screen for the Inventory Management System.
- *
- * Allows users to choose between Manager and Cashier roles.
- * Manager has full access to inventory management.
- * Cashier can only remove items by product code.
+ * Home menu for choosing Manager, Check Prices, or Cashier.
  */
 public class LoginScreen extends JFrame {
 
-    private JButton btnManager;
-    private JButton btnCashier;
-
     public LoginScreen() {
-        setTitle("Inventory Management System - Login");
-        setSize(400, 300);
+        setTitle("AZKO Inventory Management System");
+        setSize(1024, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(20, 20));
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(UITheme.WHITE);
 
-        // Create welcome panel
-        JPanel welcomePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel welcomeLabel = new JLabel("Select Your Role");
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        welcomePanel.add(welcomeLabel);
-        add(welcomePanel, BorderLayout.NORTH);
-
-        // Create button panel
-        JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 10, 10));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
-
-        btnManager = new JButton("Manager");
-        btnManager.setFont(new Font("Arial", Font.PLAIN, 18));
-        btnCashier = new JButton("Cashier");
-        btnCashier.setFont(new Font("Arial", Font.PLAIN, 18));
-
-        buttonPanel.add(btnManager);
-        buttonPanel.add(btnCashier);
-        add(buttonPanel, BorderLayout.CENTER);
-
-        // Action listeners
-        btnManager.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openManagerGUI();
-            }
-        });
-
-        btnCashier.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openCashierGUI();
-            }
-        });
+        add(createHeroPanel(), BorderLayout.NORTH);
+        add(createMenuPanel(), BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    private void openManagerGUI() {
-        dispose(); // Close login screen
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ManagerGUI();
-            }
-        });
+    private JPanel createHeroPanel() {
+        JPanel hero = new JPanel(new BorderLayout());
+        hero.setPreferredSize(new Dimension(1024, 150));
+        hero.setBackground(UITheme.RED);
+        hero.setBorder(BorderFactory.createEmptyBorder(22, 24, 22, 24));
+
+        JLabel logo = new JLabel("az-ko");
+        logo.setForeground(UITheme.WHITE);
+        logo.setFont(new Font("Arial", Font.BOLD, 66));
+        hero.add(logo, BorderLayout.WEST);
+
+        JLabel subtitle = new JLabel("Inventory and Cashier System", SwingConstants.RIGHT);
+        subtitle.setForeground(UITheme.WHITE);
+        subtitle.setFont(new Font("Arial", Font.BOLD, 24));
+        hero.add(subtitle, BorderLayout.EAST);
+        return hero;
     }
 
-    private void openCashierGUI() {
-        dispose(); // Close login screen
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new CashierGUI();
-            }
-        });
+    private JPanel createMenuPanel() {
+        JPanel menu = new JPanel(new GridBagLayout());
+        menu.setBackground(UITheme.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(26, 0, 26, 0);
+
+        JButton manager = UITheme.primaryButton("Manager", 56);
+        JButton checkPrices = UITheme.primaryButton("Check Prices", 52);
+        JButton cashier = UITheme.primaryButton("Cashier", 56);
+
+        Dimension buttonSize = new Dimension(560, 110);
+        manager.setPreferredSize(buttonSize);
+        checkPrices.setPreferredSize(buttonSize);
+        cashier.setPreferredSize(buttonSize);
+
+        manager.addActionListener(e -> openScreen(new ManagerGUI()));
+        checkPrices.addActionListener(e -> openScreen(new CheckPriceGUI()));
+        cashier.addActionListener(e -> openScreen(new CashierGUI()));
+
+        gbc.gridy = 0;
+        menu.add(manager, gbc);
+        gbc.gridy = 1;
+        menu.add(checkPrices, gbc);
+        gbc.gridy = 2;
+        menu.add(cashier, gbc);
+
+        return menu;
+    }
+
+    private void openScreen(JFrame frame) {
+        dispose();
+        frame.setVisible(true);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new LoginScreen();
-            }
-        });
+        SwingUtilities.invokeLater(LoginScreen::new);
     }
 }

@@ -2,6 +2,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * InventoryManager.java — Central controller for product inventory operations.
@@ -191,5 +196,64 @@ public class InventoryManager implements Searchable {
      */
     public HashMap<String, Product> getProductMap() {
         return productMap;
+    }
+
+    /**
+     * Saves current products to a CSV file for the file I/O requirement.
+     */
+    public void saveToFile(String filePath) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            writer.write("product_id,name,category,price,quantity,is_perishable,expiry_date");
+            writer.newLine();
+            for (Product product : productList) {
+                boolean expiring = product instanceof ExpiringProduct;
+                String expiryDate = expiring ? ((ExpiringProduct) product).getExpiryDate() : "";
+                writer.write(csv(product.getProductId()) + ","
+                        + csv(product.getName()) + ","
+                        + csv(product.getCategory()) + ","
+                        + product.getPrice() + ","
+                        + product.getQuantity() + ","
+                        + expiring + ","
+                        + csv(expiryDate));
+                writer.newLine();
+            }
+        }
+    }
+
+    /**
+     * Loads products from a CSV backup and inserts/updates them in the database.
+     */
+    public void loadFromFile(String filePath) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",", -1);
+                if (parts.length < 7) {
+                    continue;
+                }
+                Product product;
+                if (Boolean.parseBoolean(parts[5])) {
+                    product = new ExpiringProduct(parts[0], parts[1], parts[2],
+                            Double.parseDouble(parts[3]), Integer.parseInt(parts[4]), parts[6]);
+                } else {
+                    product = new Product(parts[0], parts[1], parts[2],
+                            Double.parseDouble(parts[3]), Integer.parseInt(parts[4]));
+                }
+
+                if (searchById(product.getProductId()) == null) {
+                    addProduct(product);
+                } else {
+                    updateProduct(product);
+                }
+            }
+        }
+        loadFromDatabase();
+    }
+
+    private String csv(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace(",", " ");
     }
 }

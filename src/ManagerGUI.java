@@ -55,6 +55,8 @@ public class ManagerGUI extends JFrame {
     private JButton btnSortPrice;
     private JButton btnClear;
     private JButton btnRefresh;
+    private JButton btnSaveBackup;
+    private JButton btnLoadBackup;
 
     // ── Table column names ──────────────────────────────────────────
     private final String[] COLUMNS = {
@@ -69,14 +71,17 @@ public class ManagerGUI extends JFrame {
         inventoryManager = new InventoryManager();
 
         // ── JFrame settings ─────────────────────────────────────────
-        setTitle("Inventory Management System");
-        setSize(1050, 700);
+        setTitle("AZKO - Manager Dashboard");
+        setSize(1120, 760);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
+        
+        getContentPane().setBackground(UITheme.WHITE);
 
         // ── Build panels ────────────────────────────────────────────
-        add(createInputPanel(), BorderLayout.NORTH);
+        add(createHeaderPanel(), BorderLayout.NORTH);
+        add(createInputPanel(), BorderLayout.WEST);
         add(createTablePanel(), BorderLayout.CENTER);
         add(createButtonPanel(), BorderLayout.SOUTH);
 
@@ -84,6 +89,27 @@ public class ManagerGUI extends JFrame {
         loadDataFromDatabase();
 
         setVisible(true);
+    }
+
+    private JPanel createHeaderPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(UITheme.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 38, 20, 0));
+
+        JLabel logo = UITheme.logoLabel(34);
+        logo.setPreferredSize(new Dimension(180, 90));
+        panel.add(logo, BorderLayout.WEST);
+
+        JLabel title = new JLabel("MANAGER | DASHBOARD", SwingConstants.CENTER);
+        title.setOpaque(true);
+        title.setBackground(UITheme.RED);
+        title.setForeground(UITheme.WHITE);
+        title.setFont(new Font("Arial", Font.BOLD, 44));
+        title.setBorder(new UITheme.RoundedBorder(UITheme.RED, 0, 18));
+        title.setPreferredSize(new Dimension(740, 120));
+        panel.add(title, BorderLayout.CENTER);
+
+        return panel;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -96,67 +122,93 @@ public class ManagerGUI extends JFrame {
      */
     private JPanel createInputPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Product Information"));
+        panel.setBackground(UITheme.WHITE);
+        panel.setOpaque(true);
+        panel.setBorder(BorderFactory.createEmptyBorder(18, 24, 18, 12));
+        panel.setPreferredSize(new Dimension(350, 520));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 5, 8, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Row 0 — Product ID
         gbc.gridx = 0; gbc.gridy = 0;
-        panel.add(new JLabel("Product ID:"), gbc);
+        gbc.weightx = 0;
+        panel.add(formLabel("Product ID:"), gbc);
         gbc.gridx = 1;
-        txtProductId = new JTextField(12);
+        gbc.weightx = 1;
+        txtProductId = formField(16);
         panel.add(txtProductId, gbc);
 
         // Row 0 — Name
-        gbc.gridx = 2;
-        panel.add(new JLabel("Name:"), gbc);
-        gbc.gridx = 3;
-        txtName = new JTextField(12);
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.weightx = 0;
+        panel.add(formLabel("Name:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        txtName = formField(16);
         panel.add(txtName, gbc);
 
         // Row 0 — Category
-        gbc.gridx = 4;
-        panel.add(new JLabel("Category:"), gbc);
-        gbc.gridx = 5;
-        txtCategory = new JTextField(12);
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0;
+        panel.add(formLabel("Category:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        txtCategory = formField(16);
         panel.add(txtCategory, gbc);
 
         // Row 1 — Price
-        gbc.gridx = 0; gbc.gridy = 1;
-        panel.add(new JLabel("Price:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.weightx = 0;
+        panel.add(formLabel("Price:"), gbc);
         gbc.gridx = 1;
-        txtPrice = new JTextField(12);
+        gbc.weightx = 1;
+        txtPrice = formField(16);
         panel.add(txtPrice, gbc);
 
         // Row 1 — Quantity
-        gbc.gridx = 2;
-        panel.add(new JLabel("Quantity:"), gbc);
-        gbc.gridx = 3;
-        txtQuantity = new JTextField(12);
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.weightx = 0;
+        panel.add(formLabel("Quantity:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        txtQuantity = formField(16);
         panel.add(txtQuantity, gbc);
 
         // Row 1 — Perishable checkbox
-        gbc.gridx = 4;
-        chkExpiring = new JCheckBox("Has Expiry Date");
+        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.weightx = 0;
+        gbc.gridwidth = 2;
+        chkExpiring = new JCheckBox("Expiry Date");
+        chkExpiring.setBackground(UITheme.WHITE);
+        chkExpiring.setFont(new Font("Arial", Font.BOLD, 14));
         panel.add(chkExpiring, gbc);
+        gbc.gridwidth = 1;
 
         // Row 1 — Expiry Date
-        gbc.gridx = 5;
-        txtExpiryDate = new JTextField(12);
+        gbc.gridx = 0; gbc.gridy = 6;
+        gbc.weightx = 0;
+        panel.add(formLabel("Date:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        txtExpiryDate = formField(16);
         txtExpiryDate.setToolTipText("YYYY-MM-DD (only for expiring products)");
         panel.add(txtExpiryDate, gbc);
 
         // Row 2 — Search
-        gbc.gridx = 0; gbc.gridy = 2;
-        panel.add(new JLabel("Search (ID/Name):"), gbc);
-        gbc.gridx = 1; gbc.gridwidth = 2;
-        txtSearch = new JTextField(20);
+        gbc.gridx = 0; gbc.gridy = 7;
+        gbc.weightx = 0;
+        panel.add(formLabel("Search:"), gbc);
+        gbc.gridx = 1; gbc.gridwidth = 1;
+        gbc.weightx = 1;
+        txtSearch = formField(16);
         panel.add(txtSearch, gbc);
         gbc.gridwidth = 1;
 
-        gbc.gridx = 3;
-        btnSearch = new JButton("Search");
+        gbc.gridx = 1; gbc.gridy = 8;
+        gbc.weightx = 1;
+        btnSearch = UITheme.primaryButton("Search", 14);
+        btnSearch.setPreferredSize(new Dimension(140, 46));
         panel.add(btnSearch, gbc);
 
         // Search button action
@@ -170,12 +222,27 @@ public class ManagerGUI extends JFrame {
         return panel;
     }
 
+    private JLabel formLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Arial", Font.BOLD, 14));
+        return label;
+    }
+
+    private JTextField formField(int columns) {
+        JTextField field = new JTextField(columns);
+        field.setBorder(new UITheme.RoundedBorder(UITheme.RED, 3, 18));
+        field.setFont(new Font("Arial", Font.PLAIN, 14));
+        return field;
+    }
+
     /**
      * Creates the JTable wrapped in a JScrollPane.
      */
     private JPanel createTablePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Product Records"));
+        panel.setBackground(UITheme.WHITE);
+        panel.setOpaque(true);
+        panel.setBorder(BorderFactory.createEmptyBorder(40, 10, 20, 30));
 
         // JTable + DefaultTableModel
         tableModel   = new DefaultTableModel(COLUMNS, 0) {
@@ -187,6 +254,11 @@ public class ManagerGUI extends JFrame {
         productTable = new JTable(tableModel);
         productTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         productTable.setRowHeight(24);
+        productTable.getTableHeader().setBackground(UITheme.WHITE);
+        productTable.getTableHeader().setForeground(UITheme.TEXT);
+        productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        productTable.setSelectionBackground(new Color(255, 226, 220));
+        productTable.setSelectionForeground(Color.BLACK);
 
         // Click a row → populate input fields
         productTable.addMouseListener(new MouseAdapter() {
@@ -210,15 +282,20 @@ public class ManagerGUI extends JFrame {
      * Creates the bottom button panel.
      */
     private JPanel createButtonPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 14));
+        panel.setBackground(UITheme.WHITE);
+        panel.setOpaque(true);
 
-        btnAdd       = new JButton("Add Product");
-        btnUpdate    = new JButton("Update Product");
-        btnDelete    = new JButton("Delete Product");
-        btnSortName  = new JButton("Sort by Name");
-        btnSortPrice = new JButton("Sort by Price");
-        btnClear     = new JButton("Clear Fields");
-        btnRefresh   = new JButton("Refresh");
+        btnAdd       = UITheme.primaryButton("Add Item", 15);
+        btnUpdate    = UITheme.primaryButton("Edit Item", 15);
+        btnDelete    = UITheme.primaryButton("Delete Item", 15);
+        btnSortName  = UITheme.outlineButton("Sort By Name", 14);
+        btnSortPrice = UITheme.outlineButton("Sort By Price", 14);
+        btnClear     = UITheme.outlineButton("Clear", 14);
+        btnRefresh   = UITheme.outlineButton("Refresh", 14);
+        btnSaveBackup = UITheme.outlineButton("Save Backup", 14);
+        btnLoadBackup = UITheme.outlineButton("Load Backup", 14);
+        JButton btnBack = UITheme.primaryButton("Go Back", 24);
 
         panel.add(btnAdd);
         panel.add(btnUpdate);
@@ -227,6 +304,9 @@ public class ManagerGUI extends JFrame {
         panel.add(btnSortPrice);
         panel.add(btnClear);
         panel.add(btnRefresh);
+        panel.add(btnSaveBackup);
+        panel.add(btnLoadBackup);
+        panel.add(btnBack);
 
         // ── Action listeners ────────────────────────────────────────
         btnAdd.addActionListener(new ActionListener() {
@@ -262,6 +342,29 @@ public class ManagerGUI extends JFrame {
         btnRefresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) { loadDataFromDatabase(); }
+        });
+
+        btnSaveBackup.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) { saveBackup(); }
+        });
+
+        btnLoadBackup.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) { loadBackup(); }
+        });
+
+        btnBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new LoginScreen();
+                    }
+                });
+            }
         });
 
         return panel;
@@ -432,6 +535,33 @@ public class ManagerGUI extends JFrame {
     private void sortByPrice() {
         inventoryManager.sortByPrice();
         refreshTable(inventoryManager.getProductList());
+    }
+
+    private void saveBackup() {
+        try {
+            inventoryManager.saveToFile("inventory_backup.csv");
+            JOptionPane.showMessageDialog(this,
+                    "Inventory saved to inventory_backup.csv",
+                    "File Saved", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to save inventory backup.\n" + e.getMessage(),
+                    "File Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadBackup() {
+        try {
+            inventoryManager.loadFromFile("inventory_backup.csv");
+            refreshTable(inventoryManager.getProductList());
+            JOptionPane.showMessageDialog(this,
+                    "Inventory loaded from inventory_backup.csv",
+                    "File Loaded", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to load inventory backup.\n" + e.getMessage(),
+                    "File Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
