@@ -1,247 +1,306 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
- * CashierGUI.java — Simple interface for cashiers to remove items from inventory.
+ * CashierGUI.java - AZKO cashier screen.
  *
- * Cashiers can only:
- *   • Input a product code
- *   • Specify quantity to remove
- *   • Reduce item quantity in the database
- *   • View confirmation of removal
- *
- * This is a simplified interface designed for quick checkout operations.
+ * Data structures:
+ * - ArrayList stores cart rows.
+ * - Queue stores completed transaction summaries.
  */
 public class CashierGUI extends JFrame {
+    private static final String PLACEHOLDER = "Enter Item Code";
 
-    private InventoryManager inventoryManager;
+    private final InventoryManager inventoryManager;
+    private final ArrayList<CartLine> cart;
+    private final Queue<String> completedTransactions;
+
     private JTextField txtProductCode;
-    private JTextField txtQuantity;
-    private JButton btnRemove;
-    private JButton btnBack;
-    private JLabel lblProductName;
-    private JLabel lblProductInfo;
+    private JPanel rowsPanel;
+    private JLabel lblTotal;
 
     public CashierGUI() {
         inventoryManager = new InventoryManager();
         inventoryManager.loadFromDatabase();
+        cart = new ArrayList<>();
+        completedTransactions = new LinkedList<>();
 
-        setTitle("Cashier - Product Removal");
-        setSize(500, 400);
+        setTitle("AZKO - Cashier");
+        setSize(1024, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(20, 20));
-        
-        // Set modern color scheme
-        getContentPane().setBackground(new Color(255, 228, 196)); // Bisque background
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(UITheme.WHITE);
 
-        // Create header panel
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        headerPanel.setBackground(new Color(255, 228, 196));
-        headerPanel.setOpaque(true);
-        JLabel headerLabel = new JLabel("Cashier Interface");
-        headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        headerLabel.setForeground(new Color(139, 69, 19)); // Saddle Brown
-        headerPanel.add(headerLabel);
-        add(headerPanel, BorderLayout.NORTH);
-
-        // Create main panel
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(new Color(255, 228, 196));
-        mainPanel.setOpaque(true);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Product Code Input
-        gbc.gridx = 0; gbc.gridy = 0;
-        mainPanel.add(new JLabel("Product Code:"), gbc);
-        gbc.gridx = 1;
-        txtProductCode = new JTextField(20);
-        mainPanel.add(txtProductCode, gbc);
-
-        // Quantity Input
-        gbc.gridx = 0; gbc.gridy = 1;
-        mainPanel.add(new JLabel("Quantity to Remove:"), gbc);
-        gbc.gridx = 1;
-        txtQuantity = new JTextField(20);
-        mainPanel.add(txtQuantity, gbc);
-
-        // Product Name Display
-        gbc.gridx = 0; gbc.gridy = 2;
-        mainPanel.add(new JLabel("Product Name:"), gbc);
-        gbc.gridx = 1;
-        lblProductName = new JLabel("N/A");
-        lblProductName.setFont(new Font("Arial", Font.PLAIN, 14));
-        mainPanel.add(lblProductName, gbc);
-
-        // Product Info Display
-        gbc.gridx = 0; gbc.gridy = 3;
-        mainPanel.add(new JLabel("Product Info:"), gbc);
-        gbc.gridx = 1;
-        lblProductInfo = new JLabel("N/A");
-        lblProductInfo.setFont(new Font("Arial", Font.PLAIN, 14));
-        mainPanel.add(lblProductInfo, gbc);
-
-        add(mainPanel, BorderLayout.CENTER);
-
-        // Create button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-        buttonPanel.setBackground(new Color(255, 228, 196));
-        buttonPanel.setOpaque(true);
-
-        btnRemove = new JButton("Remove Item");
-        btnRemove.setFont(new Font("Arial", Font.PLAIN, 16));
-        btnRemove.setPreferredSize(new Dimension(150, 40));
-        btnRemove.setBackground(new Color(220, 20, 60)); // Crimson
-        btnRemove.setForeground(Color.BLACK);
-        btnRemove.setFocusPainted(false);
-        btnRemove.setBorderPainted(false);
-        btnRemove.setOpaque(true);
-
-        btnBack = new JButton("Back to Login");
-        btnBack.setFont(new Font("Arial", Font.PLAIN, 16));
-        btnBack.setPreferredSize(new Dimension(150, 40));
-        btnBack.setBackground(new Color(70, 130, 180)); // Steel Blue
-        btnBack.setForeground(Color.BLACK);
-        btnBack.setFocusPainted(false);
-        btnBack.setBorderPainted(false);
-        btnBack.setOpaque(true);
-
-        buttonPanel.add(btnRemove);
-        buttonPanel.add(btnBack);
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        // Action listeners
-        txtProductCode.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                lookupProduct();
-            }
-        });
-
-        btnRemove.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeProduct();
-            }
-        });
-
-        btnBack.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new LoginScreen();
-                    }
-                });
-            }
-        });
+        add(createTopPanel(), BorderLayout.NORTH);
+        add(createCartPanel(), BorderLayout.CENTER);
+        add(createFooterPanel(), BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
-    private void lookupProduct() {
-        String productCode = txtProductCode.getText().trim();
-        
-        if (productCode.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Please enter a product code.",
-                    "Missing Input", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+    private JPanel createTopPanel() {
+        JPanel top = new JPanel(new GridBagLayout());
+        top.setBackground(UITheme.WHITE);
+        top.setBorder(BorderFactory.createEmptyBorder(32, 28, 20, 48));
 
-        Product product = inventoryManager.searchById(productCode);
-        
-        if (product != null) {
-            lblProductName.setText(product.getName());
-            String info = String.format("Category: %s | Price: $%.2f | Qty: %d",
-                    product.getCategory(), product.getPrice(), product.getQuantity());
-            lblProductInfo.setText(info);
-        } else {
-            lblProductName.setText("Not Found");
-            lblProductInfo.setText("Product code does not exist in database");
-        }
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 12, 8, 12);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JLabel logo = UITheme.logoLabel(34);
+        logo.setPreferredSize(new Dimension(170, 80));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridheight = 2;
+        top.add(logo, gbc);
+
+        txtProductCode = UITheme.roundedField(PLACEHOLDER);
+        txtProductCode.setPreferredSize(new Dimension(620, 62));
+        txtProductCode.addActionListener(e -> addItemToCart());
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridheight = 1;
+        gbc.weightx = 1;
+        top.add(txtProductCode, gbc);
+
+        JButton enter = UITheme.outlineButton("⌕  Enter Item", 30);
+        enter.setPreferredSize(new Dimension(620, 62));
+        enter.addActionListener(e -> addItemToCart());
+        gbc.gridy = 1;
+        top.add(enter, gbc);
+
+        return top;
     }
 
-    private void removeProduct() {
-        String productCode = txtProductCode.getText().trim();
-        String quantityStr = txtQuantity.getText().trim();
-        
-        if (productCode.isEmpty()) {
+    private JPanel createCartPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(UITheme.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(80, 70, 20, 70));
+
+        JPanel header = new JPanel(new GridLayout(1, 3));
+        header.setBackground(UITheme.WHITE);
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UITheme.RED));
+        header.add(columnHeader("Item", SwingConstants.LEFT));
+        header.add(columnHeader("Quantity", SwingConstants.CENTER));
+        header.add(columnHeader("Price", SwingConstants.CENTER));
+        panel.add(header, BorderLayout.NORTH);
+
+        rowsPanel = new JPanel();
+        rowsPanel.setLayout(new BoxLayout(rowsPanel, BoxLayout.Y_AXIS));
+        rowsPanel.setBackground(UITheme.WHITE);
+        panel.add(rowsPanel, BorderLayout.CENTER);
+
+        refreshCart();
+        return panel;
+    }
+
+    private JLabel columnHeader(String text, int alignment) {
+        JLabel label = new JLabel(text, alignment);
+        label.setFont(new Font("Arial", Font.BOLD, 34));
+        label.setForeground(UITheme.RED);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 18, 10, 18));
+        return label;
+    }
+
+    private JPanel createFooterPanel() {
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.setBackground(UITheme.WHITE);
+        footer.setBorder(BorderFactory.createEmptyBorder(20, 48, 30, 42));
+
+        JButton back = UITheme.primaryButton("Go Back", 28);
+        back.setPreferredSize(new Dimension(160, 70));
+        back.addActionListener(e -> {
+            dispose();
+            new LoginScreen();
+        });
+        footer.add(back, BorderLayout.WEST);
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 22, 0));
+        right.setBackground(UITheme.WHITE);
+
+        lblTotal = new JLabel("Total: -");
+        lblTotal.setFont(new Font("Arial", Font.BOLD, 38));
+        lblTotal.setForeground(UITheme.RED);
+
+        JButton checkout = UITheme.primaryButton("Checkout", 28);
+        checkout.setPreferredSize(new Dimension(190, 70));
+        checkout.addActionListener(e -> checkout());
+
+        right.add(lblTotal);
+        right.add(checkout);
+        footer.add(right, BorderLayout.EAST);
+
+        return footer;
+    }
+
+    private void addItemToCart() {
+        String code = UITheme.cleanFieldText(txtProductCode, PLACEHOLDER);
+        if (code.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Please enter a product code.",
+                    "Please enter an item code.",
                     "Missing Input", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        if (quantityStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Please enter the quantity to remove.",
-                    "Missing Input", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int quantityToRemove;
-        try {
-            quantityToRemove = Integer.parseInt(quantityStr);
-            if (quantityToRemove <= 0) {
-                JOptionPane.showMessageDialog(this,
-                        "Quantity must be greater than 0.",
-                        "Invalid Input", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Please enter a valid number for quantity.",
-                    "Invalid Input", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        Product product = inventoryManager.searchById(productCode);
-        
+        Product product = inventoryManager.searchById(code);
         if (product == null) {
             JOptionPane.showMessageDialog(this,
-                    "Product code does not exist in database.",
+                    "Item code not found: " + code,
                     "Not Found", JOptionPane.WARNING_MESSAGE);
+            resetInput();
             return;
         }
 
-        if (quantityToRemove > product.getQuantity()) {
+        CartLine line = findLine(product.getProductId());
+        int nextQuantity = line == null ? 1 : line.getQuantity() + 1;
+        if (nextQuantity > product.getQuantity()) {
             JOptionPane.showMessageDialog(this,
-                    "Cannot remove " + quantityToRemove + " items. Only " + product.getQuantity() + " available.",
+                    "Only " + product.getQuantity() + " item(s) available for " + product.getName() + ".",
                     "Insufficient Stock", JOptionPane.WARNING_MESSAGE);
+            resetInput();
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Remove " + quantityToRemove + " x " + product.getName() + " (" + productCode + ")?",
-                "Confirm Removal", JOptionPane.YES_NO_OPTION);
+        if (line == null) {
+            cart.add(new CartLine(product));
+        } else {
+            line.addOne();
+        }
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            // Reduce the quantity
-            int newQuantity = product.getQuantity() - quantityToRemove;
-            product.setQuantity(newQuantity);
-            
-            // Update the product in database
-            if (inventoryManager.updateProduct(product)) {
-                JOptionPane.showMessageDialog(this,
-                        "Successfully removed " + quantityToRemove + " items. Remaining: " + newQuantity,
-                        "Success", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Refresh the display
-                lookupProduct();
-                txtQuantity.setText("");
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Failed to update product quantity.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+        resetInput();
+        refreshCart();
+    }
+
+    private CartLine findLine(String productId) {
+        for (CartLine line : cart) {
+            if (line.getProduct().getProductId().equals(productId)) {
+                return line;
             }
+        }
+        return null;
+    }
+
+    private void checkout() {
+        if (cart.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Cart is empty.",
+                    "Checkout", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        for (CartLine line : cart) {
+            Product product = line.getProduct();
+            product.setQuantity(product.getQuantity() - line.getQuantity());
+            if (!inventoryManager.updateProduct(product)) {
+                JOptionPane.showMessageDialog(this,
+                        "Failed to update stock for " + product.getName() + ".",
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
+        String summary = "Checkout total " + formatRupiah(calculateTotal())
+                + " with " + cart.size() + " item type(s)";
+        completedTransactions.add(summary);
+
+        JOptionPane.showMessageDialog(this,
+                "Checkout complete.\n" + summary,
+                "Success", JOptionPane.INFORMATION_MESSAGE);
+
+        cart.clear();
+        inventoryManager.loadFromDatabase();
+        refreshCart();
+    }
+
+    private void refreshCart() {
+        rowsPanel.removeAll();
+
+        if (cart.isEmpty()) {
+            JPanel emptyRow = rowPanel("-", "-", "-");
+            rowsPanel.add(emptyRow);
+        } else {
+            for (CartLine line : cart) {
+                rowsPanel.add(rowPanel(
+                        line.getProduct().getName(),
+                        "x" + line.getQuantity(),
+                        formatRupiah(line.getLineTotal())
+                ));
+            }
+        }
+
+        if (lblTotal != null) {
+            lblTotal.setText(cart.isEmpty() ? "Total: -" : "Total: " + formatRupiah(calculateTotal()));
+        }
+
+        rowsPanel.revalidate();
+        rowsPanel.repaint();
+    }
+
+    private JPanel rowPanel(String item, String quantity, String price) {
+        JPanel row = new JPanel(new GridLayout(1, 3));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        row.setPreferredSize(new Dimension(840, 42));
+        row.setBackground(UITheme.WHITE);
+
+        row.add(rowLabel(item, SwingConstants.LEFT));
+        row.add(rowLabel(quantity, SwingConstants.CENTER));
+        row.add(rowLabel(price, SwingConstants.CENTER));
+        return row;
+    }
+
+    private JLabel rowLabel(String text, int alignment) {
+        JLabel label = new JLabel(text, alignment);
+        label.setFont(new Font("Arial", Font.BOLD, 22));
+        label.setForeground(UITheme.TEXT);
+        label.setBorder(BorderFactory.createEmptyBorder(3, 18, 3, 18));
+        return label;
+    }
+
+    private double calculateTotal() {
+        double total = 0;
+        for (CartLine line : cart) {
+            total += line.getLineTotal();
+        }
+        return total;
+    }
+
+    private void resetInput() {
+        txtProductCode.setText(PLACEHOLDER);
+        txtProductCode.setForeground(UITheme.MUTED);
+        txtProductCode.requestFocusInWindow();
+    }
+
+    private String formatRupiah(double value) {
+        return "Rp. " + String.format("%,.0f", value).replace(',', '.');
+    }
+
+    private static class CartLine {
+        private final Product product;
+        private int quantity;
+
+        CartLine(Product product) {
+            this.product = product;
+            this.quantity = 1;
+        }
+
+        Product getProduct() {
+            return product;
+        }
+
+        int getQuantity() {
+            return quantity;
+        }
+
+        void addOne() {
+            quantity++;
+        }
+
+        double getLineTotal() {
+            return product.getPrice() * quantity;
         }
     }
 }
